@@ -1,51 +1,49 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('fetchBtn');
-  btn.addEventListener('click', async () => {
-    console.log('[Popup] Fetch button clicked');
+// popup.js
 
-    // 1. Find the active tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id) {
-      console.error('[Popup] No active tab!');
-      return;
-    }
+// grab the status div
+const status = document.getElementById('status');
 
-    // 2. Programmatically inject content.js into the page
-    chrome.scripting.executeScript(
-      {
-        target: { tabId: tab.id },
-        files: ['content.js']
-      },
-      () => {
-        if (chrome.runtime.lastError) {
-          console.error('[Popup] Injection failed:', chrome.runtime.lastError.message);
-          return;
-        }
-        console.log('[Popup] content.js injected');
+document.getElementById('fetchBtn').addEventListener('click', async () => {
+  console.log('[Popup] 🔘 Fetch button clicked');
+  status.textContent = 'Loading…';
 
-        // 3. Now send your message
-        chrome.tabs.sendMessage(
-          tab.id,
-          { action: 'fetchCompanyInfo' },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              console.error('[Popup] sendMessage error:', chrome.runtime.lastError.message);
-              return;
-            }
-            console.log('[Popup] Scraped data:', response);
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab.url.includes('linkedin.com/company')) {
+    alert('Please navigate to a LinkedIn company profile.');
+    status.textContent = 'Error: wrong page';
+    return;
+  }
 
-            // 4. Forward to backend
-            fetch('http://localhost:5000/api/enrich', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(response)
-            })
-            .then(r => r.json())
-            .then(res => console.log('[Backend] Saved:', res))
-            .catch(err => console.error('[Backend] Error:', err));
-          }
-        );
+  try {
+    // inject & message
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    });
+
+    chrome.tabs.sendMessage(tab.id, { action: 'fetchCompanyInfo' }, async (response) => {
+      if (chrome.runtime.lastError || !response) {
+        console.error('[Popup] ❌ sendMessage error:', chrome.runtime.lastError);
+        status.textContent = 'Error fetching data';
+        return;
       }
-    );
-  });
+
+      console.log('[Popup] ✅ Scraped data:', response);
+
+      // send to backend
+      const res = await fetch('http://127.0.0.1:5000/api/enrich', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(response)
+      });
+      const result = await res.json();
+      console.log('[Backend] Saved:', result);
+
+      status.textContent = 'Done!';
+    });
+
+  } catch (err) {
+    console.error('[Popup] Backend error:', err);
+    status.textContent = 'Error!';
+  }
 });

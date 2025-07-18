@@ -5,10 +5,60 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Info Extracto</title>
+  <style>
+    /* Popup container */
+    body {
+      margin: 0;
+      padding: 1rem;
+      width: 200px;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    h3 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      text-align: center;
+      font-weight: bold;
+      color: #1a73e8;
+    }
+
+    /* Button styling */
+    #fetchBtn {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: #1a73e8;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background 0.2s ease;
+    }
+    #fetchBtn:hover {
+      background: #1669c1;
+    }
+    #fetchBtn:active {
+      background: #145ea1;
+    }
+
+    /* Optional: loader indicator */
+    #status {
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+      text-align: center;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <h3>Smart Company Info Extracto</h3>
   <button id="fetchBtn">Fetch Company Info</button>
+  <div id="status"></div>
 
   <script src="popup.js"></script>
 </body>

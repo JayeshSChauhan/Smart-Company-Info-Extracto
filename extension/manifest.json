@@ -10,7 +10,7 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://*.linkedin.com/*"
+     "*://*.linkedin.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -25,10 +25,9 @@
   },
   "content_scripts": [
   {
-    "matches": [
-      "*://*.linkedin.com/company/*"
-    ],
-    "js": ["content.js"]
+    "matches": ["*://*.linkedin.com/company/*"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
   }
 ],
   "icons": {
