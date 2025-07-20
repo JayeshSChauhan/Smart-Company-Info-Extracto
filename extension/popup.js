@@ -1,49 +1,58 @@
 // popup.js
 
-// grab the status div
-const status = document.getElementById('status');
+document.addEventListener('DOMContentLoaded', () => {
+  const fetchButton = document.getElementById('fetchButton');
+  const downloadButton = document.getElementById('downloadButton');
 
-document.getElementById('fetchBtn').addEventListener('click', async () => {
-  console.log('[Popup] 🔘 Fetch button clicked');
-  status.textContent = 'Loading…';
+  if (fetchButton) {
+    fetchButton.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'fetchCompanyInfo' }, response => {
+          if (!response || response.error) {
+            alert('❌ Failed to fetch company info');
+            return;
+          }
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab.url.includes('linkedin.com/company')) {
-    alert('Please navigate to a LinkedIn company profile.');
-    status.textContent = 'Error: wrong page';
-    return;
+          chrome.storage.local.get({ companies: [] }, result => {
+            const updatedCompanies = [...result.companies, response];
+            chrome.storage.local.set({ companies: updatedCompanies }, () => {
+              alert(`✅ Company info saved!\n📦 Total companies stored: ${updatedCompanies.length}`);
+            });
+          });
+        });
+      });
+    });
   }
 
-  try {
-    // inject & message
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    });
+  if (downloadButton) {
+    downloadButton.addEventListener('click', () => {
+      chrome.storage.local.get({ companies: [] }, result => {
+        const data = result.companies;
 
-    chrome.tabs.sendMessage(tab.id, { action: 'fetchCompanyInfo' }, async (response) => {
-      if (chrome.runtime.lastError || !response) {
-        console.error('[Popup] ❌ sendMessage error:', chrome.runtime.lastError);
-        status.textContent = 'Error fetching data';
-        return;
-      }
+        if (!data.length) {
+          alert('⚠️ No company data to download.');
+          return;
+        }
 
-      console.log('[Popup] ✅ Scraped data:', response);
-
-      // send to backend
-      const res = await fetch('http://127.0.0.1:5000/api/enrich', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(response)
+        const csvContent = convertToCSV(data);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'company_data.csv';
+        a.click();
+        URL.revokeObjectURL(url);
       });
-      const result = await res.json();
-      console.log('[Backend] Saved:', result);
-
-      status.textContent = 'Done!';
     });
-
-  } catch (err) {
-    console.error('[Popup] Backend error:', err);
-    status.textContent = 'Error!';
   }
 });
+
+function convertToCSV(data) {
+  const allKeys = Array.from(new Set(data.flatMap(obj => Object.keys(obj))));
+  const header = allKeys.join(',');
+  const rows = data.map(obj =>
+    allKeys.map(key => `"${(obj[key] || '').replace(/"/g, '""')}"`).join(',')
+  );
+  return [header, ...rows].join('\n');
+}
+

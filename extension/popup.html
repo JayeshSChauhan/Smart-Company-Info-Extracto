@@ -6,11 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Info Extracto</title>
   <style>
-    /* Popup container */
     body {
       margin: 0;
       padding: 1rem;
-      width: 200px;
+      width: 220px;
       font-family: Arial, sans-serif;
       background: #f9f9f9;
       color: #333;
@@ -24,8 +23,7 @@
       color: #1a73e8;
     }
 
-    /* Button styling */
-    #fetchBtn {
+    button {
       display: block;
       width: 100%;
       padding: 0.5rem 0;
@@ -38,15 +36,17 @@
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       transition: background 0.2s ease;
+      margin-bottom: 0.5rem;
     }
-    #fetchBtn:hover {
+
+    button:hover {
       background: #1669c1;
     }
-    #fetchBtn:active {
+
+    button:active {
       background: #145ea1;
     }
 
-    /* Optional: loader indicator */
     #status {
       margin-top: 0.75rem;
       font-size: 0.875rem;
@@ -57,7 +57,8 @@
 </head>
 <body>
   <h3>Smart Company Info Extracto</h3>
-  <button id="fetchBtn">Fetch Company Info</button>
+  <button id="fetchButton">Fetch Company Info</button>
+  <button id="downloadButton">Download All Companies CSV</button>
   <div id="status"></div>
 
   <script src="popup.js"></script>
