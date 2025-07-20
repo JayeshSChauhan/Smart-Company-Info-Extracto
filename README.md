@@ -17,6 +17,7 @@ A Chrome Extension to scrape LinkedIn company profiles (name, location, website,
 4. Click **Load unpacked**, then select the `extension/` folder.  
 5. Pin the **Smart Company Info Extracto** icon for easy access.
 
+```
 ## smart-company-info-extracto/
 ├── extension/
 │   ├── content.js
@@ -25,10 +26,11 @@ A Chrome Extension to scrape LinkedIn company profiles (name, location, website,
 │   ├── background.js
 │   ├── manifest.json
 │   └── icons/
-│       ├── icon16.pngs
+│       ├── icon16.png
 │       ├── icon48.png
 │       └── icon128.png
 └── README.md
+```
 
 ## 🛠️ Usage
 
